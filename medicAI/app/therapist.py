@@ -129,9 +129,7 @@ def sanitize_input(text):
 # ─────────────────────────────────────────────
 @therapist_bp.route('/', methods=['GET', 'POST'])
 def therapist():
-    if 'user_ID' not in session:
-        return jsonify({"error": "Please login first"}), 401
-
+    
     session.setdefault('conversation_history', [])
     session.setdefault('emotion_history', [])
 

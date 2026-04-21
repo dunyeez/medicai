@@ -1,1 +1,1 @@
-# medicai
+# medicAI

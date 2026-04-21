@@ -14,8 +14,7 @@ model = whisper.load_model("base")
 
 @speech_bp.route('/api/upload-audio', methods=['POST'])
 def upload_audio():
-    if 'user_ID' not in session:
-        return jsonify({"error": "Please login first"}), 401
+   
 
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400

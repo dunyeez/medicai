@@ -49,8 +49,7 @@ def home():
 
 @main_bp.route('/diagnostic-support', methods=['GET', 'POST'])
 def diagnostic_support():
-    if 'user_ID' not in session:
-        return jsonify({"error": "Please login first"}), 401
+    
 
     # Initialize conversation history if empty
     if 'conversation_history' not in session:

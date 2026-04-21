@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MedicAi</title>
+  <title>medicAI</title>
   <link rel="website icon" href="static/docai.png" type="png">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -167,7 +167,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 48px;
+      padding: 4px 48px;
       background: rgba(255,255,255,0.65);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(167,139,250,0.2);
@@ -229,7 +229,7 @@
       min-height: calc(100vh - 73px);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 60px 48px 80px;
       text-align: center;
@@ -411,7 +411,7 @@
       padding: 34px 28px 30px;
       box-shadow: var(--shadow-card);
       transition: var(--transition);
-      text-align: center;
+      text-align: left;
       border: 1px solid rgba(167,139,250,0.18);
       backdrop-filter: blur(12px);
       position: relative;
@@ -533,10 +533,10 @@
   <!-- SIDEBAR -->
   <div class="sidebar">
     <a href="/" class="sidebar-logo">
-      <img src="static/docai.png" alt="MedicAi logo">
+      <img src="static/docai.png" alt="medicAI logo" style="width: 40px; height: 40px;">
     </a>
     <div id="icons">
-      <a href="facebook.com" title="Facebook"><i class="fa-brands fa-square-facebook"></i></a>
+      <a href="https://www.facebook.com/share/1XTuGUvym7/?mibextid=wwXIfr" title="Facebook" target="_blank"><i class="fa-brands fa-square-facebook"></i></a>
       <a href="/" title="Home"><i class="fa-solid fa-globe"></i></a>
     </div>
   </div>
@@ -546,7 +546,7 @@
 
     <!-- NAVBAR -->
     <nav class="navbar">
-      <a href="/" class="brand">Medic<span>AI</span></a>
+      <a href="/"><img src="static/Ai.png" alt="MedicAI" style="height: 160px; width: auto; object-fit: contain; margin: -50px 0 -50px -30px;"></a>
       <div class="nav-links">
         <a href="/">Home</a>
         <a href="/diagnostic-support">Diagnosis</a>
@@ -575,7 +575,7 @@
       {% if logged_in %}
         <!-- LOGGED IN STATE -->
         <div class="hero-badge"><span class="dot"></span> Health Dashboard</div>
-        <h1 class="welcome-heading">Welcome back to <span class="highlight">MedicAI</span></h1>
+        <h1 class="welcome-heading">Welcome back to <span class="highlight">medicAI</span></h1>
         <p class="welcome-sub">Your AI-powered healthcare recommendation platform</p>
         <p class="section-label">Choose a service</p>
 
@@ -616,9 +616,14 @@
         <h1>Your Smart<br><span class="highlight">Health Assistant</span></h1>
         <p>Experience the future of healthcare with AI-powered diagnosis, therapy support, and a doctor finder — all in one place.</p>
         <div class="hero-buttons">
-          <a href="/register" class="btn-hero-primary">Get Started Free</a>
-          <a href="/login"    class="btn-hero-secondary">Sign In</a>
-        </div>
+  <a href="/register" class="btn-hero-primary">Get Started Free</a>
+  <a href="/login"    class="btn-hero-secondary">Sign In</a>
+</div>
+</div>
+<div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+  <img src="static/ziza.jpg" style="width: 90%; max-width: 600px; object-fit: contain;">
+</div>
+<img src="static/ziza.jpg" style="position:absolute; right:80px; top:50%; transform:translateY(-50%); width:500px; object-fit:contain;">
       {% endif %}
 
     </section>
