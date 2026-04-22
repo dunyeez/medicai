@@ -292,17 +292,22 @@
       font-size: 1.8em;
     }
   }
+  
 </style>
 </head>
+
 <body>
+ 
   <div class="background-overlay"></div>
 
-  <div class="form-container">
-    <div class="brand">Medic<span>Ai</span></div>
-    <h1>Login</h1>
+  <div class="form-container"> 
+    <a href="/"><img src="static/Ai.png" alt="MedicAI" style="height: 160px; width: auto; object-fit: contain; margin: -50px 0 -50px -30px;"></a>
+    <br>
+    <h1> Login </h1>
     {% if msg %}
       <p class="error-message">{{ msg }}</p>
     {% endif %}
+    
     <form action="/login" method="post">
       <div class="form-group">
         <input type="email" placeholder="Email" name="email" required />
@@ -314,5 +319,6 @@
     </form>
     <p>Don't have an account? <a href="/register">Register</a></p>
   </div>
+  
 </body>
 </html>
