@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>medicAI</title>
+  <link rel="website icon" href="static/docai.png" type="png">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --indigo:        #3B31C4;
+      --indigo-mid:    #5548E0;
+      --violet:        #7C5CFC;
+      --violet-light:  #A78BFA;
+      --violet-glow:   #C4B5FD;
+      --periwinkle:    #818CF8;
+      --blue-soft:     #EEF2FF;
+      --blue-mid:      #C7D2FE;
+
+      --white:         #FFFFFF;
+      --card-bg:       rgba(255,255,255,0.85);
+      --text-dark:     #1E1B4B;
+      --text-mid:      #4338CA;
+      --text-muted:    #6B7280;
+
+      --accent-pink:   #F472B6;
+      --accent-teal:   #34D399;
+
+      --sidebar-bg:    #1E1B4B;
+      --sidebar-w:     64px;
+
+      --radius-lg:     20px;
+      --radius-md:     14px;
+      --radius-sm:     8px;
+      --transition:    all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-card:   0 8px 32px rgba(91,60,250,0.13);
+      --shadow-hover:  0 20px 48px rgba(91,60,250,0.22);
+    }
+
+    *, *::before, *::after {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #F5F3FF;
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      position: fixed;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      padding: 14px 0;
+      box-shadow: 4px 0 20px rgba(30,27,75,0.25);
+    }
+
+    .sidebar-logo {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--violet), var(--periwinkle));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(124,92,252,0.45);
+      transition: var(--transition);
+    }
+
+    .sidebar-logo:hover { transform: scale(1.08); }
+
+    .sidebar-logo img {
+      width: 26px; height: 26px;
+      filter: brightness(0) invert(1);
+      object-fit: contain;
+    }
+
+    #icons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    #icons a {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px;
+      color: var(--violet-glow);
+      font-size: 1rem;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    #icons a:hover {
+      background: rgba(124,92,252,0.25);
+      color: var(--white);
+      transform: scale(1.1);
+    }
+
+    /* ═══ MAIN CONTENT ═══ */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      flex-grow: 1;
+      position: relative;
+    }
+
+    /* ═══ BG MESH ═══ */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-mesh::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 10% 10%, rgba(124,92,252,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 90% 5%,  rgba(99,102,241,0.13) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 60% at 80% 85%, rgba(167,139,250,0.15) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(244,114,182,0.08) 0%, transparent 50%),
+        linear-gradient(160deg, #EDE9FE 0%, #EEF2FF 40%, #F5F3FF 100%);
+    }
+
+    .bg-dots {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(99,102,241,0.12) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      animation: float 16s ease-in-out infinite alternate;
+    }
+    .orb-1 { width:500px;height:500px; background:rgba(124,92,252,0.14); top:-120px; left:10%; animation-delay:0s; }
+    .orb-2 { width:380px;height:380px; background:rgba(99,102,241,0.12); bottom:-60px; right:5%; animation-delay:-7s; }
+    .orb-3 { width:280px;height:280px; background:rgba(244,114,182,0.09); top:40%; left:60%; animation-delay:-4s; }
+
+    @keyframes float {
+      0%   { transform: translate(0,0) scale(1); }
+      100% { transform: translate(20px,25px) scale(1.06); }
+    }
+
+    /* ═══ NAVBAR ═══ */
+    .navbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 48px;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(167,139,250,0.2);
+      box-shadow: 0 2px 20px rgba(91,60,250,0.07);
+    }
+
+    .brand {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      letter-spacing: -0.03em;
+      text-decoration: none;
+    }
+
+    .brand span { color: var(--violet); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover {
+      background: rgba(124,92,252,0.1);
+      color: var(--violet);
+    }
+
+    .btn-logout {
+      padding: 9px 22px;
+      background: linear-gradient(135deg, var(--violet), var(--indigo));
+      color: white !important;
+      border-radius: 50px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(124,92,252,0.35);
+      transition: var(--transition);
+    }
+
+    .btn-logout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(124,92,252,0.45);
+      background: linear-gradient(135deg, var(--indigo-mid), var(--violet)) !important;
+    }
+
+    /* ═══ HERO ═══ */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: calc(100vh - 73px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 48px 80px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,92,252,0.1);
+      border: 1px solid rgba(124,92,252,0.25);
+      border-radius: 50px;
+      padding: 7px 18px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--violet);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge .dot {
+      width: 7px; height: 7px;
+      background: var(--violet);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity:1; }
+      50%      { transform: scale(1.4); opacity:0.6; }
+    }
+
+    .hero h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      animation: fadeUp 0.7s 0.1s ease both;
+      letter-spacing: -0.04em;
+    }
+
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--violet) 0%, var(--periwinkle) 50%, var(--accent-pink) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.75;
+      margin-bottom: 40px;
+      font-weight: 400;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    .btn-hero-primary {
+      padding: 14px 34px;
+      background: linear-gradient(135deg, var(--violet), var(--indigo));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(124,92,252,0.4);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-hero-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+
+    .btn-hero-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(124,92,252,0.5);
+    }
+    .btn-hero-primary:hover::after { transform: translateX(100%); }
+
+    .btn-hero-secondary {
+      padding: 14px 34px;
+      background: rgba(255,255,255,0.8);
+      color: var(--violet);
+      border: 1.5px solid rgba(124,92,252,0.35);
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      backdrop-filter: blur(8px);
+      transition: var(--transition);
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(124,92,252,0.08);
+      border-color: var(--violet);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(124,92,252,0.15);
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(22px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* ═══ LOGGED-IN WELCOME ═══ */
+    .welcome-heading {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .welcome-heading .highlight {
+      background: linear-gradient(135deg, var(--violet), var(--periwinkle));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .welcome-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 52px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    /* ═══ FEATURE CARDS ═══ */
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 18px;
+      animation: fadeUp 0.6s 0.15s ease both;
+    }
+
+    .feature-cards {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .link { text-decoration: none; color: inherit; }
+
+    .feature-card {
+      width: 260px;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 34px 28px 30px;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition);
+      text-align: left;
+      border: 1px solid rgba(167,139,250,0.18);
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      transition: var(--transition);
+    }
+
+    .feature-card.diagnostic::before  { background: linear-gradient(90deg, var(--violet), var(--periwinkle)); }
+    .feature-card.consult::before     { background: linear-gradient(90deg, var(--accent-teal), #6EE7B7); }
+    .feature-card.library::before     { background: linear-gradient(90deg, var(--accent-pink), #FDA4AF); }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(124,92,252,0.3);
+    }
+
+    .feature-icon-wrap {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 20px;
+      transition: var(--transition);
+    }
+
+    .feature-card.diagnostic .feature-icon-wrap { background: rgba(124,92,252,0.1); }
+    .feature-card.consult    .feature-icon-wrap { background: rgba(52,211,153,0.12); }
+    .feature-card.library    .feature-icon-wrap { background: rgba(244,114,182,0.1); }
+
+    .feature-card:hover .feature-icon-wrap { transform: scale(1.1) rotate(-4deg); }
+
+    .feature-card h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+
+    .card-arrow {
+      position: absolute;
+      bottom: 18px; right: 20px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(124,92,252,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      color: var(--violet);
+      transition: var(--transition);
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+
+    .feature-card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ═══ FLASH ═══ */
+    .flash {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--violet), var(--indigo));
+      color: white;
+      padding: 11px 26px;
+      border-radius: 50px;
+      box-shadow: 0 6px 20px rgba(124,92,252,0.35);
+      z-index: 999;
+      font-weight: 600;
+      font-size: 0.9rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 768px) {
+      .navbar { padding: 16px 20px; }
+      .hero { padding: 40px 20px 60px; }
+      .feature-cards { flex-direction: column; align-items: center; }
+      .feature-card { width: 100%; max-width: 360px; }
+      .nav-links a:not(.btn-logout) { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-buttons { flex-direction: column; width: 100%; }
+      .btn-hero-primary, .btn-hero-secondary { width: 100%; text-align: center; }
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BG -->
+  <div class="bg-mesh">
+    <div class="bg-dots"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    
+    <div id="icons">
+      <a href="https://www.facebook.com/share/1XTuGUvym7/?mibextid=wwXIfr" title="Facebook" target="_blank"><i class="fa-brands fa-square-facebook"></i></a>
+      <a href="/" title="Home"><i class="fa-solid fa-globe"></i></a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a href="/"><img src="static/Ai.png" alt="MedicAI" style="height: 160px; width: auto; object-fit: contain; margin: -50px 0 -50px -30px;"></a>
+      <div class="nav-links">
+        
+        <a href="/diagnostic-support">Diagnosis</a>
+        <a href="/therapist">Therapy</a>
+        <a href="/find-doctors">Doctors</a>
+        {% if logged_in %}
+          <a href="/logout" class="btn-logout">Logout</a>
+        {% else %}
+          <a href="/login" class="btn-logout">Login</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- HERO -->
+    <section class="hero">
+
+      {% if logged_in %}
+        <!-- LOGGED IN STATE -->
+        <div class="hero-badge"><span class="dot"></span> Health Dashboard</div>
+        <h1 class="welcome-heading">Welcome back to <span class="highlight">medicAI</span></h1>
+        <p class="welcome-sub">Your AI-powered healthcare recommendation platform</p>
+        <p class="section-label">Choose a service</p>
+
+        <div class="feature-cards">
+
+          <a href="/diagnostic-support" class="link">
+            <div class="feature-card diagnostic">
+              <div class="feature-icon-wrap">🩺</div>
+              <h3>Diagnostic Support</h3>
+              <p>AI-powered symptom analysis and clinical decision support</p>
+              <div class="card-arrow">→</div>
+            </div>
+          </a>
+
+          <a href="/find-doctors" class="link">
+            <div class="feature-card consult">
+              <div class="feature-icon-wrap">👨‍⚕️</div>
+              <h3>Consult a Doctor</h3>
+              <p>Find the nearest doctor, pharmacy and hospital near you</p>
+              <div class="card-arrow">→</div>
+            </div>
+          </a>
+
+          <a href="/therapist" class="link">
+            <div class="feature-card library">
+              <div class="feature-icon-wrap">📚</div>
+              <h3>Therapist</h3>
+              <p>Access evidence-based mental health support and guidance</p>
+              <div class="card-arrow">→</div>
+            </div>
+          </a>
+
+        </div>
+
+      {% else %}
+        <!-- LOGGED OUT STATE -->
+        <div class="hero-badge"><span class="dot"></span> AI-Powered Healthcare</div>
+        <h1>Your Smart<br><span class="highlight">Health Assistant</span></h1>
+        <p>Experience the future of healthcare with AI-powered diagnosis, therapy support, and a doctor finder — all in one place.</p>
+        <div class="hero-buttons">
+  <a href="/register" class="btn-hero-primary">Get Started Free</a>
+  <a href="/login"    class="btn-hero-secondary">Sign In</a>
+</div>
+</div>
+<!-- <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+  <img src="static/ziza.jpg" style="width: 90%; max-width: 600px; object-fit: contain;">
+</div>
+<img src="static/ziza.jpg" style="position:absolute; right:80px; top:50%; transform:translateY(-50%); width:500px; object-fit:contain;"> -->
+      {% endif %}
+
+    </section>
+
+  </div>
+
+</body>
+</html>

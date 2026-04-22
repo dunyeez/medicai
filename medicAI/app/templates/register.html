@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Registration | medicAI</title>
+<style>
+  :root {
+    --primary-blue: #2A5C99;
+    --primary-blue-hover: #1E4A7E;
+    --primary-blue-light: #4A90E2;
+    --primary-green: #4CAF50;
+    --primary-green-hover: #2E7D32;
+
+    --bg-overlay: rgba(0, 0, 0, 0.5);
+    --form-bg: #FFFFFF;
+    --input-bg: #F5F7FA;
+    --input-focus: #FFFFFF;
+
+    --text-color: #333333;
+    --text-muted: #6C757D;
+    --input-text: #333333;
+
+    --error-color: #DC3545;
+    --success-color: var(--primary-green);
+
+    --border-radius: 8px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background: url('static/images/back.jpg') no-repeat center center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: var(--text-color);
+  }
+
+  .background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(42, 92, 153, 0.8) 0%, rgba(26, 58, 96, 0.9) 100%);
+    z-index: -1;
+    backdrop-filter: blur(2px);
+  }
+
+  .form-container {
+    max-height: 90vh;
+    background-color: var(--form-bg);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow-y: auto;
+  }
+
+  .form-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    transition: var(--transition);
+    opacity: 0;
+  }
+
+  .form-container:hover::before {
+    opacity: 1;
+  }
+
+  @keyframes shine {
+    0% { transform: rotate(30deg) translate(-30%, -30%); }
+    100% { transform: rotate(30deg) translate(30%, 30%); }
+  }
+
+  .brand {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+  }
+
+  .brand span {
+    color: #ff4444;
+  }
+
+  .form-container h1 {
+    margin-bottom: 25px;
+    font-size: 2em;
+    position: relative;
+    display: inline-block;
+    color: var(--primary-blue);
+  }
+
+  .form-container h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 3px;
+    transition: var(--transition);
+  }
+
+  .form-container:hover h1::after {
+    width: 100px;
+    background: var(--primary-blue-light);
+  }
+
+  .form-group {
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #E0E0E0;
+    border-radius: var(--border-radius);
+    font-size: 1em;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--primary-blue-light);
+    box-shadow: 0 0 0 2px var(--primary-blue-light), var(--shadow);
+    background-color: var(--input-focus);
+    transform: translateY(-2px);
+  }
+
+  .form-group input::placeholder {
+    color: var(--text-muted);
+    transition: var(--transition);
+  }
+
+  .form-group input:focus::placeholder {
+    opacity: 0.5;
+  }
+
+  button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(42, 92, 153, 0.2);
+  }
+
+  button:hover {
+    background: var(--primary-blue-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(42, 92, 153, 0.3);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: var(--transition);
+  }
+
+  button:hover::after {
+    left: 100%;
+  }
+
+  p {
+    margin-top: 20px;
+    font-size: 0.95em;
+    color: var(--text-muted);
+  }
+
+  p a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+  }
+
+  p a:hover {
+    color: var(--primary-blue-hover);
+  }
+
+  p a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-blue);
+    transition: var(--transition);
+  }
+
+  p a:hover::after {
+    width: 100%;
+  }
+
+  .error-message {
+    color: var(--error-color);
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    animation: shake 0.5s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+
+  .success-message {
+    color: var(--success-color);
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    .form-container {
+      padding: 30px;
+    }
+
+    .form-container h1 {
+      font-size: 1.8em;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="background-overlay"></div>
+
+  <div class="form-container">
+    <div class="brand">Medic<span>Ai</span></div>
+    <h1>Patient Registration</h1>
+    {% if msg %}
+      <p class="error-message">{{ msg }}</p>
+    {% endif %}
+    <form action="/register" method="post">
+      <div class="form-group">
+        <input type="text" placeholder="First Name" name="first_name" required />
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="Last Name" name="last_name" required />
+      </div>
+      <div class="form-group">
+        <select name="sex" required>
+          <option value="" disabled selected>Select Sex</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <input type="number" placeholder="Age" name="age" min="0" max="120" required />
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="Address" name="address" required />
+      </div>
+      <div class="form-group">
+        <input type="tel" placeholder="Phone Number" name="number" required />
+      </div>
+      <div class="form-group">
+        <input type="tel" placeholder="Emergency Contact (Friend or Family)" name="emergency_contact" required />
+      </div>
+      <div class="form-group">
+        <input type="email" placeholder="Email" name="email" required />
+      </div>
+      <div class="form-group">
+        <input type="password" placeholder="Password" name="password" required />
+      </div>
+      <div class="form-group">
+        <input type="password" placeholder="Confirm your Password" name="con-password" required />
+      </div>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login</a></p>
+  </div>
+</body>
+</html>

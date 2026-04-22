@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>medicAI</title>
+    <link rel="website icon" href="{{ url_for('static', filename='docai.png') }}" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #5548E0;
+            --primary-blue-hover: #3B31C4;
+            --primary-blue-light: #7C5CFC;
+            --primary-green: #7C5CFC;
+            --bg-overlay: rgba(59, 49, 196, 0.45);
+            --sidebar-bg: #1E1B4B;
+            --white: #ffffff;
+            --text-color: #333333;
+            --text-muted: #6C757D;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='back.jpg') }}") no-repeat fixed center/cover;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-bg);
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .sidebar img {
+            margin-top: 5px;
+            height: 50px;
+            width: 50px;
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar img:hover {
+            opacity: 1;
+        }
+
+        .logo h2 {
+            color: var(--white);
+        }
+
+        #icons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #icons i {
+            color: var(--white);
+            font-size: 1rem;
+            margin: 5px 0;
+            transition: color 0.3s ease;
+        }
+
+        #icons i:hover {
+            color: var(--primary-blue-light);
+        }
+
+        .main-content {
+            margin-left: 60px;
+            flex-grow: 1;
+            background: var(--bg-overlay);
+        }
+
+       .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: relative;
+        }
+
+        .navbar {
+            position: relative;
+            width: 100%;
+            padding: 4px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 2;
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(167,139,250,0.2);
+        }
+        .navbar a {
+            color: var(--white);
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: var(--primary-blue-light);
+        }
+
+        .camera-layout {
+            display: flex;
+            flex-grow: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+        .camera-column {
+            display: flex;
+            flex-direction: column;
+            width: 30%;
+            gap: 20px;
+        }
+
+        .camera-box {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .camera-box h2 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        #video {
+            width: 100%;
+            border-radius: 5px;
+            background-color: #000;
+            transform: scaleX(-1);
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .model-output {
+            flex-grow: 1;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-output h2 {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        #message-container {
+            background-color: rgba(249, 249, 249, 0.7);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: var(--primary-blue);
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: #f0f0f0;
+            margin-right: auto;
+        }
+
+        .maxxer {
+            color: #ff4444;
+        }
+        .nav-link {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4338CA;
+    text-decoration: none;
+    transition: all 0.35s ease;
+}
+.nav-link:hover {
+    background: rgba(124,92,252,0.1);
+    color: #7C5CFC;
+}
+
+        .input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-blue-light);
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+        }
+
+        .btn-send {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-send:hover {
+            background-color: var(--primary-blue-hover);
+        }
+
+        .btn-record {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .recording {
+            background-color: red !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        #typing-indicator {
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 10px;
+        }
+
+        #emotion-display {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                width: 100%;
+                flex-direction: row;
+                padding: 10px;
+                justify-content: space-around;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                width: 100%;
+            }
+
+            
+
+            .camera-column {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/"><img src="{{ url_for('static', filename='docai.png') }}" alt="medicAI logo"></a>
+        <div id="icons">
+            <a href="facebook.com"><i class="fa-brands fa-square-facebook"></i></a>
+            <a href="/"><i class="fa-solid fa-globe"></i></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="hero">
+            <div class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:4px 48px; background:rgba(255,255,255,0.65); backdrop-filter:blur(16px); border-bottom:1px solid rgba(167,139,250,0.2); position:relative; z-index:3;">
+    <a href="/"><img src="{{ url_for('static', filename='Ai.png') }}" style="height:160px; width:auto; object-fit:contain; margin:-50px 0 -50px -30px;"></a>
+    <div style="display:flex; align-items:center; gap:6px;">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/diagnostic-support" class="nav-link" >Diagnosis</a>
+        
+        <a href="/find-doctors"   class="nav-link">Doctors</a>
+        <a href="/login"  class="nav-link">Login</a>
+    </div>
+</div>
+
+            <div class="camera-layout">
+                <div class="camera-column">
+                    <div class="camera-box">
+                        <h2>My Camera</h2>
+                        <video id="video" autoplay muted playsinline></video>
+                        <canvas id="canvas"></canvas>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" class="chat-input" placeholder="Describe your symptoms here..." id="user-input" autocomplete="off">
+                        <button type="button" class="btn btn-record" title="Voice Input" id="record-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button type="button" class="btn btn-send" title="Send Message" id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="model-output">
+                    <h2>Therapist:</h2>
+                    <div class="output-content" id="message-container">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const messageContainer = document.getElementById('message-container');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const recordBtn = document.getElementById('record-btn');
+            const currentEmotionDisplay = document.getElementById('current-emotion');
+
+            let currentEmotion = 'neutral';
+            let isRecording = false;
+            let recognition;
+            let stream;
+
+            async function initCamera() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                    startEmotionDetection();
+                } catch (err) {
+                    console.error("Camera error:", err);
+                    addMessage("Could not access camera. Please check permissions.", 'ai');
+                }
+            }
+
+            function startEmotionDetection() {
+                setInterval(sendFrameForAnalysis, 3000);
+            }
+
+            async function sendFrameForAnalysis() {
+                if (!stream || !video.videoWidth) return;
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                const imageData = canvas.toDataURL('image/jpeg');
+
+                try {
+                    const response = await fetch('/therapist/analyze_emotion', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: imageData })
+                    });
+                    const data = await response.json();
+                    if (data.emotion && data.emotion !== currentEmotion) {
+                        currentEmotion = data.emotion;
+                        currentEmotionDisplay.textContent = currentEmotion;
+                    }
+                } catch (error) {
+                    console.error('Emotion analysis error:', error);
+                }
+            }
+
+            function addMessage(text, sender) {
+                const msg = document.createElement('div');
+                msg.classList.add('message', `${sender}-message`);
+                msg.textContent = text;
+                messageContainer.appendChild(msg);
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                const typing = document.createElement('div');
+                typing.id = 'typing-indicator';
+                typing.textContent = 'Thinking...';
+                messageContainer.appendChild(typing);
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            async function handleSend() {
+                const message = userInput.value.trim();
+                if (!message) return;
+
+                addMessage(message, 'user');
+                userInput.value = '';
+                showTypingIndicator();
+
+                try {
+                    const response = await fetch('/therapist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message,
+                            emotion: currentEmotion
+                        })
+                    });
+                    const data = await response.json();
+                    hideTypingIndicator();
+                    addMessage(data.response, 'ai');
+                } catch (err) {
+                    hideTypingIndicator();
+                    addMessage("Sorry, there was an error processing your request.", 'ai');
+                    console.error('Chat error:', err);
+                }
+            }
+
+            let mediaRecorder;
+            let audioChunks = [];
+
+            function toggleRecording(state) {
+                isRecording = state;
+                recordBtn.classList.toggle('recording', state);
+                recordBtn.innerHTML = state ? '<i class="fas fa-stop"></i>' : '<i class="fas fa-microphone"></i>';
+                userInput.placeholder = state ? "Listening..." : "Describe your symptoms here...";
+            }
+
+            recordBtn.addEventListener('click', async () => {
+                if (isRecording && mediaRecorder) {
+                    mediaRecorder.stop();
+                    toggleRecording(false);
+                    return;
+                }
+
+                try {
+                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(audioStream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'recording.webm');
+
+                        showTypingIndicator();
+
+                        try {
+                            const response = await fetch('/api/upload-audio', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const data = await response.json();
+                            hideTypingIndicator();
+
+                            if (response.ok) {
+                                console.log("Whisper heard:", data.text);
+                                if (data.text && data.text.trim() !== "") {
+                                    userInput.value = data.text;
+                                    handleSend();
+                                } else {
+                                    addMessage("🎙️ I couldn't hear anything. Try speaking a bit louder or longer!", 'ai');
+                                }
+                            } else {
+                                addMessage("Transcription error: " + data.error, 'ai');
+                            }
+                        } catch (err) {
+                            hideTypingIndicator();
+                            console.error("Server connection error:", err);
+                            addMessage("Failed to connect to the speech server.", 'ai');
+                        }
+
+                        audioStream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    toggleRecording(true);
+
+                } catch (err) {
+                    console.error("Microphone access error:", err);
+                    addMessage("Could not access microphone. Please check browser permissions.", 'ai');
+                }
+            });
+
+            sendBtn.addEventListener('click', handleSend);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleSend();
+            });
+
+            initCamera();
+        });
+    </script>
+</body>
+</html>
