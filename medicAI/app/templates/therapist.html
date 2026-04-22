@@ -8,12 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --primary-blue: #2A5C99;
-            --primary-blue-hover: #1E4A7E;
-            --primary-blue-light: #4A90E2;
-            --primary-green: #4CAF50;
-            --bg-overlay: rgba(42, 92, 153, 0.7);
-            --sidebar-bg: #1A3A6B;
+            --primary-blue: #5548E0;
+            --primary-blue-hover: #3B31C4;
+            --primary-blue-light: #7C5CFC;
+            --primary-green: #7C5CFC;
+            --bg-overlay: rgba(59, 49, 196, 0.45);
+            --sidebar-bg: #1E1B4B;
             --white: #ffffff;
             --text-color: #333333;
             --text-muted: #6C757D;
@@ -87,25 +87,26 @@
             background: var(--bg-overlay);
         }
 
-        .hero {
+       .hero {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 0;
             position: relative;
         }
 
         .navbar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: calc(100% - 60px);
-            padding: 15px 20px;
+            position: relative;
+            width: 100%;
+            padding: 4px 48px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
             z-index: 2;
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(167,139,250,0.2);
         }
-
         .navbar a {
             color: var(--white);
             text-decoration: none;
@@ -121,10 +122,9 @@
         .camera-layout {
             display: flex;
             flex-grow: 1;
-            padding-top: 70px;
+            padding: 20px;
             gap: 20px;
         }
-
         .camera-column {
             display: flex;
             flex-direction: column;
@@ -205,6 +205,19 @@
         .maxxer {
             color: #ff4444;
         }
+        .nav-link {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4338CA;
+    text-decoration: none;
+    transition: all 0.35s ease;
+}
+.nav-link:hover {
+    background: rgba(124,92,252,0.1);
+    color: #7C5CFC;
+}
 
         .input-container {
             display: flex;
@@ -300,10 +313,7 @@
                 width: 100%;
             }
 
-            .camera-layout {
-                flex-direction: column;
-                padding-top: 20px;
-            }
+            
 
             .camera-column {
                 width: 100%;
@@ -322,11 +332,16 @@
 
     <div class="main-content">
         <div class="hero">
-            <div class="navbar">
-                <div class="logo">
-                    <h2>Medic<span class="maxxer">Ai</span></h2>
-                </div>
-            </div>
+            <div class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:4px 48px; background:rgba(255,255,255,0.65); backdrop-filter:blur(16px); border-bottom:1px solid rgba(167,139,250,0.2); position:relative; z-index:3;">
+    <a href="/"><img src="{{ url_for('static', filename='Ai.png') }}" style="height:160px; width:auto; object-fit:contain; margin:-50px 0 -50px -30px;"></a>
+    <div style="display:flex; align-items:center; gap:6px;">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/diagnostic-support" class="nav-link" >Diagnosis</a>
+        <a href="/therapist" class="nav-link">Therapist</a>
+        <a href="/find-doctors"   class="nav-link">Doctors</a>
+        <a href="/login"  class="nav-link">Login</a>
+    </div>
+</div>
 
             <div class="camera-layout">
                 <div class="camera-column">

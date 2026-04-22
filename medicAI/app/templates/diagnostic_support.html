@@ -8,17 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
   :root {
-    --primary-blue: #2A5C99;
-    --primary-blue-hover: #1E4A7E;
-    --primary-blue-light: #4A90E2;
-    --primary-green: #4CAF50;
-    --bg-overlay: rgba(42, 92, 153, 0.7);
-    --sidebar-bg: #1A3A6B;
-    --white: #ffffff;
-    --text-color: #333333;
-    --text-muted: #6C757D;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --chat-bg: rgba(255, 255, 255, 0.9);
+    --primary-blue: #5548E0;
+    --primary-blue-hover: #3B31C4;
+    --primary-blue-light: #7C5CFC;
+    --primary-green: #7C5CFC;
+    --bg-overlay: rgba(59, 49, 196, 0.45);
+    --sidebar-bg: #1E1B4B;
   }
 
   * {
@@ -94,18 +89,18 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 0;
     position: relative;
   }
 
   .hero-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    margin-top: 20px;
-    max-height: calc(100vh - 100px);
-  }
-
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      margin-top: 20px;
+      padding: 0 20px;
+      max-height: calc(100vh - 100px);
+    }
   .chat-container {
     flex-grow: 1;
     display: flex;
@@ -113,19 +108,20 @@
     max-width: 900px;
     width: 100%;
     margin: 0 auto;
-    background: var(--chat-bg);
+    background: rgba(255, 255, 255, 0.92);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(91,60,250,0.18);
+    border: 1px solid rgba(167,139,250,0.2);
   }
 
   .chat-header {
-    padding: 20px;
-    background: var(--primary-blue);
-    color: white;
-    text-align: center;
-    flex-shrink: 0;
-  }
+        padding: 20px;
+        background: #7B68EE;
+        color: white;
+        text-align: center;
+        flex-shrink: 0;
+      }
 
   .chat-messages {
     flex-grow: 1;
@@ -155,6 +151,32 @@
   .maxxer {
     color: #ff4444;
   }
+  .nav-link {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4338CA;
+    text-decoration: none;
+    transition: all 0.35s ease;
+}
+.nav-link:hover {
+    background: rgba(124,92,252,0.1);
+    color: #7C5CFC;
+}
+  .nav-link {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4338CA;
+    text-decoration: none;
+    transition: all 0.35s ease;
+}
+.nav-link:hover {
+    background: rgba(124,92,252,0.1);
+    color: #7C5CFC;
+}
 
   .chat-messages::-webkit-scrollbar-thumb:hover {
     background: var(--primary-blue-hover);
@@ -183,7 +205,8 @@
 
   .ai-message {
     align-self: flex-start;
-    background: #f1f1f1;
+    background: #DCDCDC;
+    color: #1E1B4B;
     border-bottom-left-radius: 4px;
   }
 
@@ -322,10 +345,16 @@
 
     <div class="main-content">
         <div class="hero">
-            <div class="navbar">
-                <div class="logo">
-                    <h2 style="color: white;">Medic<span class="maxxer">Ai</span></h2>
-                </div>
+            <div class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:4px 48px; background:rgba(255,255,255,0.65); backdrop-filter:blur(16px); border-bottom:1px solid rgba(167,139,250,0.2);">
+    <a href="/"><img src="static/Ai.png" style="height:160px; width:auto; object-fit:contain; margin:-50px 0 -50px -30px;"></a>
+    <div style="display:flex; align-items:center; gap:6px;">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/diagnostic-support" class="nav-link" >Diagnosis</a>
+        <a href="/therapist" class="nav-link">Therapist</a>
+        <a href="/find-doctors"   class="nav-link">Doctors</a>
+        <a href="/login"  class="nav-link">Login</a>
+    </div>
+</div>
             </div>
 
             <div class="hero-content">
