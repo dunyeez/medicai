@@ -1,44 +1,24 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from flask import Blueprint, render_template, session, request, jsonify
 from datetime import datetime
 import re
+import google.generativeai as genai
 
 main_bp = Blueprint('main', __name__)
 
+GEMINI_API_KEY = "AIzaSyDRDdBCZZ9Gg7CEhr8392hbn3-t5CTqC50"
 
-def create_chain():
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key="AIzaSyD_WrHKk1rwDFB_izAKbPNsreYDwDs2V_c",
-        temperature=0.6
-    )
-
-    prompt = PromptTemplate(
-        input_variables=["history", "user_input"],
-        template="""
-        [System] You are a medical support assistant. Follow these rules:
-        1. Consider previous conversation: {history}
-        2. Respond to: {user_input}
-        3. Guidelines:
-           - Start your response naturally and vary your tone — avoid repeating "Okay, I understand "
-             Examples: "Got it.", "Thanks for sharing that.", "Sorry you're going through this.", or jump right into the reply.
-           - Provide 1-2 possible explanations (not diagnoses)
-           - Suggest general self-care options when appropriate
-           - Clearly state when professional care is recommended
-           - Ask only ONE relevant follow-up question if needed
-           - Keep responses under 3 sentences
-           - NEVER answer non-health questions
-           -  include a section titled ' Common Medications' that lists 1–2 OTC meds that may help. Always include a disclaimer to consult a doctor first.
-        Assistant:"""
-
-    )
-    return LLMChain(llm=llm, prompt=prompt)
+SYSTEM_PROMPT = """You are a medical support assistant. Follow these rules:
+- Start your response naturally and vary your tone, avoid repeating "Okay, I understand"
+- Provide 1-2 possible explanations (not diagnoses)
+- Suggest general self-care options when appropriate
+- Clearly state when professional care is recommended
+- Ask only ONE relevant follow-up question if needed
+- Keep responses under 3 sentences
+- NEVER answer non-health questions
+- Include a section titled 'Common Medications' listing 1-2 OTC meds that may help, with a disclaimer to consult a doctor first."""
 
 
 def sanitize_input(text):
-    """Clean user input while preserving medical terms"""
     return re.sub(r'[^\w\s,.?!-°]', '', text).strip()
 
 
@@ -49,15 +29,11 @@ def home():
 
 @main_bp.route('/diagnostic-support', methods=['GET', 'POST'])
 def diagnostic_support():
-    
-
-    # Initialize conversation history if empty
     if 'conversation_history' not in session:
         session['conversation_history'] = []
 
     if request.method == 'POST':
         try:
-            # Get JSON data from fetch request
             data = request.get_json()
             user_input = sanitize_input(data.get('message', ''))
 
@@ -67,31 +43,26 @@ def diagnostic_support():
                     "conversation_history": session['conversation_history']
                 }), 400
 
-            # Add user message to history
             session['conversation_history'].append({
                 'role': 'user',
                 'content': user_input,
                 'timestamp': datetime.now().isoformat()
             })
 
-            # Format conversation history for context
             history = "\n".join(
                 f"{msg['role']}: {msg['content']}"
-                for msg in session['conversation_history'][:-1]  # Exclude current message
+                for msg in session['conversation_history'][:-1]
             )
 
-            # Get AI response
-            chain = create_chain()
-            response = chain.invoke({
-                "user_input": user_input,
-                "history": history
-            })
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            full_prompt = f"{SYSTEM_PROMPT}\n\nConversation History:\n{history}\n\nUser: {user_input}\nAssistant:"
+            response = model.generate_content(full_prompt)
+            ai_response = response.text.strip()
 
-            ai_response = response.get('text', '').strip()
             if not ai_response:
                 ai_response = "Could you please tell me more about your symptoms?"
 
-            # Add AI response to history
             session['conversation_history'].append({
                 'role': 'ai',
                 'content': ai_response,
@@ -111,7 +82,6 @@ def diagnostic_support():
                 "response": "For urgent medical concerns, please contact a healthcare professional immediately."
             }), 500
 
-    # GET request handling (unchanged)
     return render_template('diagnostic_support.html',
                            logged_in=True,
                            conversation_history=session['conversation_history'])

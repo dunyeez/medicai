@@ -1,7 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from flask import Blueprint, render_template, session, request, jsonify
 from datetime import datetime
 import re
 from deepface import DeepFace
@@ -10,41 +7,43 @@ import numpy as np
 import base64
 import os
 import tempfile
+import google.generativeai as genai
 
 therapist_bp = Blueprint('therapist', __name__)
 
+GEMINI_API_KEY = "AIzaSyDRDdBCZZ9Gg7CEhr8392hbn3-t5CTqC50"
 
-# ─────────────────────────────────────────────
-#  AUDIO TRANSCRIPTION  (Whisper via OpenAI)
-# ─────────────────────────────────────────────
+THERAPIST_PROMPT = """You are a helpful, thoughtful, and positive therapist designed to uplift and support individuals with their personal struggles.
+Guidelines:
+- Be thoughtful and understanding
+- Ask questions for further details
+- Never diagnose, only suggest general advice
+- Recommend professional care for serious symptoms
+- Make your answer brief
+- NEVER answer non-related health questions, just say you can't answer
+- After 5 questions give a score from 100 on how the user describes their feelings and how their emotion changed."""
+
+
+def sanitize_input(text):
+    return re.sub(r'[^\w\s,.?!-°]', '', text).strip()
+
+
 @therapist_bp.route('/api/upload-audio', methods=['POST'])
 def upload_audio():
-    """Receive a webm audio blob, transcribe it with Whisper, return the text."""
     try:
         audio_file = request.files.get('audio')
         if not audio_file:
             return jsonify({'error': 'No audio file received'}), 400
 
-        # Save to a temp file so Whisper / ffmpeg can read it
         with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as tmp:
             audio_file.save(tmp.name)
             tmp_path = tmp.name
 
-        # ── Option A: local openai-whisper ──────────────────────────────
-        # Make sure you ran:  pip install openai-whisper  &&  apt install ffmpeg
         import whisper
-        model = whisper.load_model('base')          # tiny / base / small / medium
+        model = whisper.load_model('base')
         result = model.transcribe(tmp_path)
         text = result.get('text', '').strip()
-
-        # ── Option B: OpenAI API (comment A out, uncomment this) ────────
-        # import openai
-        # openai.api_key = os.environ.get('OPENAI_API_KEY')
-        # with open(tmp_path, 'rb') as f:
-        #     transcript = openai.audio.transcriptions.create(model='whisper-1', file=f)
-        # text = transcript.text.strip()
-
-        os.remove(tmp_path)   # clean up
+        os.remove(tmp_path)
 
         if not text:
             return jsonify({'text': '', 'warning': 'No speech detected'}), 200
@@ -53,24 +52,26 @@ def upload_audio():
 
     except Exception as e:
         import traceback
-        traceback.print_exc()           # full trace in your terminal
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
-# ─────────────────────────────────────────────
-#  EMOTION ANALYSIS
-# ─────────────────────────────────────────────
 @therapist_bp.route('/analyze_emotion', methods=['POST'])
 def analyze_emotion():
-    """Analyze a base64-encoded image for emotion using DeepFace."""
     try:
         data = request.json
         image_data = data.get('image', '')
         should_flip = data.get('flip', False)
 
+        if ',' not in image_data:
+            return jsonify({'emotion': 'neutral', 'error': 'Invalid image data'}), 200
+
         encoded_data = image_data.split(',')[1]
         nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img is None:
+            return jsonify({'emotion': 'neutral', 'error': 'Could not decode image'}), 200
 
         if should_flip:
             img = cv2.flip(img, 1)
@@ -85,51 +86,11 @@ def analyze_emotion():
         })
     except Exception as e:
         print(f"Emotion analysis error: {e}")
-        return jsonify({'emotion': 'neutral', 'error': str(e)}), 500
+        return jsonify({'emotion': 'neutral', 'error': str(e)}), 200
 
 
-# ─────────────────────────────────────────────
-#  LANGCHAIN / GEMINI CHAIN
-# ─────────────────────────────────────────────
-def create_chain():
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key="AIzaSyD_WrHKk1rwDFB_izAKbPNsreYDwDs2V_c",
-        temperature=0.6
-    )
-    prompt = PromptTemplate(
-        input_variables=["history", "user_input", "emotion"],
-        template="""
-You are a helpful, thoughtful, and positive therapist designed to uplift and support individuals with their personal struggles.
-stick to those Guidelines:
-           - Be thoughtful and understanding
-           - ask question for further details
-           - Never diagnose, only suggest general advice
-           - Recommend professional care for serious symptoms
-           - make your answer brief
-           - NEVER answer non related health question!!!!.and don't ask questions about them just say you can't answer.
-           - after 5 question give him a point from 100 how he describe his feeling and how emotion change . 
-Current Detected Emotion from facial recognition model: {emotion}
-Conversation History:
-{history}
-
-User: {user_input}
-Assistant:
-"""
-    )
-    return LLMChain(llm=llm, prompt=prompt)
-
-
-def sanitize_input(text):
-    return re.sub(r'[^\w\s,.?!-°]', '', text).strip()
-
-
-# ─────────────────────────────────────────────
-#  MAIN THERAPIST CHAT
-# ─────────────────────────────────────────────
 @therapist_bp.route('/', methods=['GET', 'POST'])
 def therapist():
-    
     session.setdefault('conversation_history', [])
     session.setdefault('emotion_history', [])
 
@@ -141,7 +102,7 @@ def therapist():
 
             if not user_input:
                 return jsonify({
-                    "error": "Please enter your symptoms",
+                    "error": "Please enter your message",
                     "conversation_history": session['conversation_history'],
                     "emotion_history": session['emotion_history']
                 }), 400
@@ -161,13 +122,20 @@ def therapist():
                 for msg in session['conversation_history'][:-1]
             )
 
-            chain = create_chain()
-            response = chain.invoke({
-                "user_input": user_input,
-                "history": history_str,
-                "emotion": f"{current_emotion} (Recent: {emotion_history_str})"
-            })
-            ai_response = response.get('text', '').strip() or "Could you tell me more about that?"
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            full_prompt = f"""{THERAPIST_PROMPT}
+
+Current Detected Emotion: {current_emotion} (Recent: {emotion_history_str})
+
+Conversation History:
+{history_str}
+
+User: {user_input}
+Assistant:"""
+
+            response = model.generate_content(full_prompt)
+            ai_response = response.text.strip() or "Could you tell me more about that?"
 
             session['conversation_history'].append({
                 'role': 'ai',
