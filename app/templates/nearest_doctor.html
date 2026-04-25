@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedicAi | Find Doctors</title>
+    <link rel="icon" href="static/docai.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --primary-blue: #2A5C99;
+            --primary-blue-hover: #1E4A7E;
+            --primary-blue-light: #4A90E2;
+            --primary-green: #4CAF50;
+            --bg-overlay: rgba(42, 92, 153, 0.7);
+            --sidebar-bg: #1A3A6B;
+            --white: #ffffff;
+            --text-color: #333333;
+            --text-muted: #6C757D;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: url('static/back.jpg') no-repeat fixed center/cover;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 60px;
+            background: var(--sidebar-bg);
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .sidebar img {
+            margin-top: 5px;
+            height: 50px;
+            width: 50px;
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+        }
+
+        .main-content {
+            margin-left: 60px;
+            flex-grow: 1;
+            background: var(--bg-overlay);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: relative;
+        }
+
+        .navbar {
+            padding: 0 0 15px 0;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 span { color: var(--primary-green); }
+
+        .widget-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .doctor-list {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 650px;
+            overflow-y: auto;
+        }
+
+        .map-container {
+            flex: 2;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            height: 650px;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        .select-map-btn {
+            width: 100%;
+            padding: 13px 16px;
+            background-color: #f8f9fa;
+            color: var(--primary-blue);
+            border: 2px dashed var(--primary-blue-light);
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .select-map-btn:hover {
+            background-color: #eef4ff;
+            border-style: solid;
+        }
+
+        .select-map-btn.active {
+            background-color: var(--primary-blue);
+            color: white;
+            border-style: solid;
+        }
+
+        .selected-location-info {
+            margin: 12px 0;
+            padding: 10px 14px;
+            background: #e8f5e8;
+            border: 1px solid var(--primary-green);
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: var(--primary-green);
+            display: none;
+        }
+
+        button[type="submit"] {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 13px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--primary-blue-hover);
+        }
+
+        .doctor-card {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .doctor-card:hover {
+            background: #f8fbff;
+        }
+
+        .doctor-card:last-child { border-bottom: none; }
+
+        .doctor-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background-color: var(--primary-blue-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .doctor-info {
+            flex: 1;
+        }
+
+        .doctor-name {
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 3px;
+        }
+
+        .doctor-specialty {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .doctor-distance {
+            color: var(--primary-green);
+            font-size: 0.85rem;
+        }
+
+        .book-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .widget-container { flex-direction: column; }
+            .doctor-list, .map-container { width: 100%; height: auto; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/"><img src="static/docai.png" alt="MedicAi logo"></a>
+    </div>
+
+    <div class="main-content">
+        <div class="hero">
+            <div class="navbar">
+                <h2 style="color: white;">Medic<span style="color:#ff4444;">Ai</span></h2>
+            </div>
+
+            <div class="hero-content">
+                <h1>Find <span>Nearby Doctors</span></h1>
+
+                <div class="widget-container">
+                    <div class="doctor-list">
+                        <h2 style="margin-bottom: 20px; color: var(--primary-blue);">Search</h2>
+
+                        <form method="POST" action="/find-doctors" id="search-form">
+
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select name="type" required>
+                                    <option value="" disabled {% if not selected_type %}selected{% endif %}>Select type</option>
+                                    <option value="doctor"   {% if selected_type == 'doctor' %}selected{% endif %}>Doctor</option>
+                                    <option value="hospital" {% if selected_type == 'hospital' %}selected{% endif %}>Hospital</option>
+                                    <option value="pharmacy" {% if selected_type == 'pharmacy' %}selected{% endif %}>Pharmacy</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Select Your Location on Map</label>
+                                <button type="button" id="select-on-map-btn" class="select-map-btn">
+                                    <i class="fas fa-map-marker-alt"></i> Click on Map to Set My Location
+                                </button>
+                            </div>
+
+                            <div id="selected-location-info" class="selected-location-info">
+                                <i class="fas fa-check-circle"></i>
+                                Location selected: <span id="selected-coords"></span>
+                            </div>
+
+                            <input type="hidden" name="selected_lat" id="selected_lat" value="">
+                            <input type="hidden" name="selected_lng" id="selected_lng" value="">
+
+                            <button type="submit">
+                                <i class="fas fa-magnifying-glass"></i> Search Nearby
+                            </button>
+                        </form>
+
+                        <h3 style="margin: 25px 0 15px; color: var(--primary-blue);">Results</h3>
+
+                        {% if doctors and doctors|length > 0 %}
+                            {% for doctor in doctors %}
+                            <div class="doctor-card" onclick="focusOnDoctor({{ loop.index0 }})">
+                                <div class="doctor-avatar">{{ doctor.name[0].upper() }}</div>
+                                <div class="doctor-info">
+                                    <div class="doctor-name">{{ doctor.name }}</div>
+                                    <div class="doctor-specialty">{{ doctor.address }}</div>
+                                    <div class="doctor-distance">
+                                        {{ doctor.distance }} • {{ doctor.duration }}
+                                    </div>
+                                </div>
+                                <button class="book-btn">Directions</button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: #666; text-align: center; margin-top: 30px; font-style: italic;">
+                                No results yet.<br>
+                                Select your location on the map and click "Search Nearby".
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let markers = [];
+        let userMarker = null;
+        let selectedLat = {{ user_latitude | default(35.6970, true) }};
+        let selectedLng = {{ user_longitude | default(-0.6330, true) }};
+        let isSelectingLocation = false;
+
+        function initMap() {
+            map = L.map('map').setView([selectedLat, selectedLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Red marker for user location
+            userMarker = L.marker([selectedLat, selectedLng], {
+                draggable: true,
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41]
+                })
+            }).addTo(map);
+
+            userMarker.bindPopup("<b>Your Location</b>");
+
+            // Existing doctors markers
+            const doctorsData = [
+                {% for doctor in doctors %}
+                {
+                    name: "{{ doctor.name }}",
+                    address: "{{ doctor.address }}",
+                    lat: {{ doctor.latitude }},
+                    lng: {{ doctor.longitude }}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            doctorsData.forEach((doctor, index) => {
+                const marker = L.marker([doctor.lat, doctor.lng]).addTo(map);
+                markers.push(marker);
+                marker.bindPopup(`<b>${doctor.name}</b><br>${doctor.address}`);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectBtn = document.getElementById('select-on-map-btn');
+
+            selectBtn.addEventListener('click', () => {
+                isSelectingLocation = !isSelectingLocation;
+
+                if (isSelectingLocation) {
+                    selectBtn.classList.add('active');
+                    selectBtn.innerHTML = `<i class="fas fa-map-marker-alt"></i> Click anywhere on the map...`;
+                    map.getContainer().style.cursor = 'crosshair';
+                } else {
+                    selectBtn.classList.remove('active');
+                    selectBtn.innerHTML = `<i class="fas fa-map-marker-alt"></i> Click on Map to Set My Location`;
+                    map.getContainer().style.cursor = '';
+                }
+            });
+        });
+
+        document.getElementById('search-form').addEventListener('submit', function() {
+            document.getElementById('selected_lat').value = selectedLat;
+            document.getElementById('selected_lng').value = selectedLng;
+        });
+
+        function focusOnDoctor(index) {
+            if (markers[index]) {
+                map.setView(markers[index].getLatLng(), 16);
+                markers[index].openPopup();
+            }
+        }
+
+        // Map click handler for selecting location
+        function initMapClick() {
+            map.on('click', function(e) {
+                if (!isSelectingLocation) return;
+
+                selectedLat = e.latlng.lat;
+                selectedLng = e.latlng.lng;
+
+                if (userMarker) map.removeLayer(userMarker);
+
+                userMarker = L.marker([selectedLat, selectedLng], {
+                    draggable: true,
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41]
+                    })
+                }).addTo(map);
+
+                userMarker.bindPopup("<b>Your Selected Location</b>").openPopup();
+
+                const infoDiv = document.getElementById('selected-location-info');
+                infoDiv.style.display = 'block';
+                document.getElementById('selected-coords').textContent =
+                    selectedLat.toFixed(4) + ", " + selectedLng.toFixed(4);
+            });
+        }
+
+        window.onload = function() {
+            initMap();
+            initMapClick();
+        };
+    </script>
+</body>
+</html>
